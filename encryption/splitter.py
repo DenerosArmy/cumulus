@@ -7,11 +7,11 @@ Output: encrpyted file string portions
 Output String format: file_name+file_index+string_portion
 
 """
-
+import sys 
 from encrypter import encrypt, decrypt
-from sys.path import insert
-from os import rename, remove, abspath
-insert(0, abspath(".."))
+from os import rename, remove
+from os.path import abspath
+sys.path.insert(0, abspath(".."))
 from os.path import join
 #from indexer import index
 
@@ -62,6 +62,7 @@ def rename_file(file_path, new_name):
 
 def process_ram_file(ram_file_path):
     """Converts the given RAM file into a relative path."""
+    print(ram_file_path)
     rel_path = ram_file_path[9:].replace("_!_", "/")
     i = len(rel_path)-1
     while i >= 0:
@@ -98,7 +99,8 @@ def join_file(rel_file_path, temp_file_paths):
     temp_file = open(temp_file_path, 'w')
     for i in range(0, len(chunks)):
         temp_file.write(decrypt(chunks[i]))
-    return get_absolute_path(rel_file_path), temp_file_path
+    print(get_absolute_path(rel_file_path), temp_file_path)
+    #return get_absolute_path(rel_file_path), temp_file_path
     #rename(temp_file_path, get_abs_path(rel_file_path))
 
 #index.set_read_file_cb(join_file)
