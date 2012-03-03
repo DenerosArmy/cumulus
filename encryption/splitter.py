@@ -9,7 +9,9 @@ Output String format: file_name+file_index+string_portion
 """
 
 from encrypter import encrypt, decrypt
-from os import rename
+from sys.path import insert
+from os import rename, remove, abspath
+insert(0, abspath(".."))
 from os.path import join
 #from indexer import index
 
@@ -91,6 +93,7 @@ def join_file(rel_file_path, temp_file_paths):
     for temp_file in temp_file_paths:
         index, file_chunk = retrieve_metatags(temp_file)
         chunks[index] = file_chunk
+        remove(temp_file)
     temp_file_path = cumulus_directory+process_ram_file(rel_file_path)+".cumuluswap"
     temp_file = open(temp_file_path, 'w')
     for i in range(0, len(chunks)):
