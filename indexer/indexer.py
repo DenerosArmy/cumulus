@@ -112,6 +112,14 @@ class Index(object):
             for x in self.pull_json():
                 yield x
 
+    def download_all(self):
+        """Download all files from server"""
+        self.mapping = {}
+        self.idx_json = {}
+        self.json_counter = 0
+
+        for filepath, swappath in self.pull_json():
+            print "Download {}<---{}".format(filepath, swappath)
 
     def push_json(self):
         """Push JSON to the JSON target backend
