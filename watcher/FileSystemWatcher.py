@@ -1,5 +1,7 @@
-import os 
-from pyinotify import * 
+import os, sys 
+from pyinotify import *
+sys.path.insert(0, os.path.abspath("..")) 
+from encryption.splitter import split_file, inform  
 import BlackList
 ''' Interface for watching file system, monitors specfic file/directory calls Spliiter upon any changes ''' 
 def Watcher(): 
@@ -14,8 +16,9 @@ class OsWatcher(ProcessEvent):
 	path = os.path.join(event.path,event.name) 
 #	if (path != dont_check and path[-11:] != ".cumuluswap"):
 #		upload_file(os.path.join(event.path,event.name))
-    
-	print(os.path.join(event.path,event.name)) 
+	print(path);
+	if(event.name[0] != "."):
+    		split_file(path) 
     def process_IN_DELETE(self,event):
 	path = os.path.join(event.path,event.name) 
 #	if (path != dont_check and path[-11:] != ".cumuluswap"):
@@ -40,7 +43,7 @@ class OsWatcher(ProcessEvent):
 
 def notify(Watcher, Process, Path): 
 	'''Instantiates notify class with the OsWatcher Process''' 
-	#inform(path) 
+	inform(Path) 
 	notifier = ThreadedNotifier(Watcher,Process) 
 	notifier.start() 
 	Watcher.add_watch(Path,OsWatcher.mask,rec=True)
