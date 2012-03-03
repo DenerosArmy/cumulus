@@ -1,5 +1,8 @@
+import os, sys
 import os.path
 import json
+sys.path.insert(0, os.path.abspath('..'))
+from apis.dbox_wrapper import DropboxService
 
 class Index(object):
     """An index of mappings between local files and files in the cloud
@@ -11,15 +14,19 @@ class Index(object):
         def cb(proper_name, new_chunks, old_chunks):
             print "Remote updated file {}: new chunks {}, old chunks {}".format(
                 proper_name, new_chunks, old_chunks)
+            return "@@fake-path", "@@fake-path"
         self.read_file_cb = cb
 
         def cb(proper_name):
             print "Remote deleted file {}".format(proper_name)
+            return "@@fake-path", None
         self.read_delete_file_cb = cb
 
         self.mapping = {}
         self.idx_json = {}
         self.json_counter = 0
+
+        self.backends = { "db" : DropboxService() }
 
     def set_read_file_cb(self, cb):
         """Set the callback when a file on the cloud is added or updated
@@ -48,13 +55,11 @@ class Index(object):
         :param chunks: Iterable of absolute paths to chunks of the file
         """
         for chunk in chunks:
-            print "Fake uploading chunk: {}".format(chunk)
-            #<backingstore>.upload(chunk)
-            #TODO: upload chunk
-            pass
+            print "Uploading chunk: {}".format(chunk)
+            self.backends["db"].upload(chunk)
 
         self.mapping[proper_name] = [ os.path.basename(chunk) for chunk in chunks ]
-        self.idx_json[self.json_counter] = [
+        self.idx_json[unicode(self.json_counter)] = [
             {
             'file' : proper_name,
             'chunks' : self.mapping[proper_name]
@@ -72,7 +77,7 @@ class Index(object):
         self.mapping[new_name] = self.mapping[old_name]
         del self.mapping[old_name]
 
-        self.idx_json[self.json_counter] = [
+        self.idx_json[unicode(self.json_counter)] = [
             {
             'file' : old_name,
             'chunks' : None
@@ -92,7 +97,7 @@ class Index(object):
         """
         del self.mapping[proper_name]
 
-        self.idx_json[self.json_counter] = [
+        self.idx_json[unicode(self.json_counter)] = [
             {
             'file' : proper_name,
             'chunks' : None
@@ -101,32 +106,45 @@ class Index(object):
         self.json_counter += 1
         self.push_json()
 
-    def sync_remote_updated(self):
-        """Call to sync the index when the remote index is updated"""
-        self.pull_json()
+    def sync(self):
+        """Syncs the remote data with the database. Yields (proper_name, swap_name pairs) whenever a file is updated"""
+        while True:
+            for x in self.pull_json():
+                yield x
 
 
     def push_json(self):
         """Push JSON to the JSON target backend
         """
-        #TODO: push JSON
-        #<json_backend>.write_data(json.dumps(self.idx_json))
-        print "Fake pushing JSON: {}".format(json.dumps(self.idx_json))
+        with open('/dev/shm/idx.json', 'w') as f:
+            json.dump(self.idx_json, f)
+        self.backends["db"].upload('/dev/shm/idx.json')
+        print "Pushed JSON: {}".format(json.dumps(self.idx_json))
 
     def pull_json(self):
-        """Pull in new JSON data and update files on our end
+        """Pull in new JSON data and update files on our end. Yields (filepath, swapfilepath) pairs.
         """
-        new_json = []
-        #TODO: pull JSON
-        print "Fake pulling JSON: {}".format(new_json)
-        #new_json = json.loads(<json_backend>.read_data())
-        while self.json_counter in new_json.keys():
-            new = new_json[self.json_counter]
+        self.backends["db"].download('/dev/shm/idx.json', 'idx.json')
+        with open('/dev/shm/idx.json') as f:
+            new_json = json.load(f)
+        print "Pulled JSON: {}".format(new_json)
+
+        self.json_counter -= 1
+        while unicode(self.json_counter) in new_json.keys():
+            new = new_json[unicode(self.json_counter)]
+            print "New: {}".format(new)
             for datum in new:
                 if datum['chunks'] is None:
+                    print "Deleting file: {}".format(datum['file'])
                     del self.mapping[datum['file']]
-                    self.delete_file_cb(datum['file'])
+                    yield self.delete_file_cb(datum['file'])
                 else:
                     self.mapping[datum['file']] = datum['chunks']
-                    self.read_file_cb(datum['file'], datum['chunks'], [])
+                    # Download the chunks
+                    for chunk in datum['chunks']:
+                        print "Downloading chunk: {}".format(chunk)
+                        self.backends["db"].download(os.path.join("/dev/shm", chunk), chunk)
+                    yield self.read_file_cb(datum['file'], datum['chunks'], [])
             self.json_counter += 1
+
+        self.idx_json = new_json
