@@ -1,5 +1,6 @@
 import os 
 from pyinotify import * 
+import BlackList
 ''' Interface for watching file system, monitors specfic file/directory calls Spliiter upon any changes ''' 
 def Watcher(): 
 	return WatchManager() 
@@ -10,21 +11,30 @@ class OsWatcher(ProcessEvent):
     mask =  EventsCodes.ALL_FLAGS['IN_CREATE'] | EventsCodes.ALL_FLAGS['IN_DELETE']  | EventsCodes.ALL_FLAGS['IN_MODIFY'] | EventsCodes.ALL_FLAGS['IN_MOVED_FROM']  | EventsCodes.ALL_FLAGS['IN_MOVED_TO']
 
     def process_IN_CREATE(self,event): 
-	#print(os.path.join(event.path,event.name))
-	upload_file(os.path.join(event.path,event.name))
+	path = os.path.join(event.path,event.name) 
+	if (path != dont_check && path[-11:] != ".cumuluswap"):
+		upload_file(os.path.join(event.path,event.name))
     
     def process_IN_DELETE(self,event):
-        delete_file(os.path.join(event.path,event.name))
-	#print(os.path.join(event.path,event.name)) 
+	path = os.path.join(event.path,event.name) 
+	if (path != dont_check && path[-11:] != ".cumuluswap"):
+            delete_file(os.path.join(event.path,event.name))
+	print(os.path.join(event.path,event.name)) 
     def process_IN_MODIFY(self,event): 
-	upload_file(os.path.join(event.path,event.name)) 
-	#print(os.path.join(event.path,event.name)) 
+	path = os.path.join(event.path,event.name) 
+	if (path != dont_check && path[-11:] != ".cumuluswap"):
+	    upload_file(os.path.join(event.path,event.name)) 
+	print(os.path.join(event.path,event.name)) 
     def process_MOVED_FROM(self,event):
-	delete_file(os.path.join(event.path,event.name))
-	#print(os.path.join(event.path,event.name)) 
+	path = os.path.join(event.path,event.name) 
+	if (path != dont_check && path[-11:] != ".cumuluswap"):
+	   delete_file(os.path.join(event.path,event.name))
+	print(os.path.join(event.path,event.name)) 
     def process_MOVED_TO(self,event):
- 	upload_file(os.path,join(event.path,event.name)) 
-   	#print(os.path.join(event.path,event.name)) 
+	path = os.path.join(event.path,event.name) 
+	if (path != dont_check && path[-11:] != ".cumuluswap"):
+ 		upload_file(os.path,join(event.path,event.name)) 
+   	print(os.path.join(event.path,event.name)) 
     
 
 def notify(Watcher, Process, Path): 
@@ -33,7 +43,7 @@ def notify(Watcher, Process, Path):
 	notifier = ThreadedNotifier(Watcher,Process) 
 	notifier.start() 
 	Watcher.add_watch(Path,OsWatcher.mask,rec=True)
-	print(path + " is now being tracked by Cumulus") 
+	print(Path + " is now being tracked by Cumulus") 
 
 
 
