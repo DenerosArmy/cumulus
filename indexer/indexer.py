@@ -129,7 +129,6 @@ class Index(object):
             new_json = json.load(f)
         print "Pulled JSON: {}".format(new_json)
 
-        self.json_counter -= 1
         while unicode(self.json_counter) in new_json.keys():
             new = new_json[unicode(self.json_counter)]
             print "New: {}".format(new)
