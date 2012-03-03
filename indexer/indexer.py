@@ -21,12 +21,11 @@ class Index(object):
         """
         self.read_file_cb = cb
 
-    def write_file(self, proper_name, new_chunks, old_chunks = []):
+    def write_file(self, proper_name, chunks):
         """Write a file to the cloud
 
         :param proper_name: Proper name of the file (actual path on the filesystem, relative to folder we're tracking)
-        :param new_chunks: Iterable of absolute paths to new/updated chunks of the file
-        :param old_chunks: Iterable of absolute paths to chunks of the file that have not been updated (optional)
+        :param chunks: Iterable of absolute paths to chunks of the file
         """
         pass
 
