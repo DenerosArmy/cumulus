@@ -1,8 +1,5 @@
 import os 
-from pyinotify import *
-sys.path.insert(0,os.path.abspath('..'))
-from encryption.splitter import split_file 
- 
+from pyinotify import * 
 import BlackList
 ''' Interface for watching file system, monitors specfic file/directory calls Spliiter upon any changes ''' 
 def Watcher(): 
@@ -15,30 +12,31 @@ class OsWatcher(ProcessEvent):
 
     def process_IN_CREATE(self,event): 
 	path = os.path.join(event.path,event.name) 
-	split_file(os.path.join(event.path,event.name))
-	print(path)
-'''    
+#	if (path != dont_check and path[-11:] != ".cumuluswap"):
+#		upload_file(os.path.join(event.path,event.name))
+    
+	print(os.path.join(event.path,event.name)) 
     def process_IN_DELETE(self,event):
 	path = os.path.join(event.path,event.name) 
-	if (path != dont_check && path[-11:] != ".cumuluswap"):
-          delete_file(os.path.join(event.path,event.name))
+#	if (path != dont_check and path[-11:] != ".cumuluswap"):
+        #    delete_file(os.path.join(event.path,event.name))
 	print(os.path.join(event.path,event.name)) 
     def process_IN_MODIFY(self,event): 
 	path = os.path.join(event.path,event.name) 
-#	if (path != dont_check && path[-11:] != ".cumuluswap"):
-	    upload_file(os.path.join(event.path,event.name)) 
+#	if (path != dont_check and path[-11:] != ".cumuluswap"):
+#	    upload_file(os.path.join(event.path,event.name)) 
 	print(os.path.join(event.path,event.name)) 
     def process_MOVED_FROM(self,event):
 	path = os.path.join(event.path,event.name) 
-	if (path != dont_check && path[-11:] != ".cumuluswap"):
-	   delete_file(os.path.join(event.path,event.name))
+#	if (path != dont_check and path[-11:] != ".cumuluswap"):
+#	   delete_file(os.path.join(event.path,event.name))
 	print(os.path.join(event.path,event.name)) 
     def process_MOVED_TO(self,event):
 	path = os.path.join(event.path,event.name) 
-	if (path != dont_check && path[-11:] != ".cumuluswap"):
- 		upload_file(os.path,join(event.path,event.name)) 
+#	if (path != dont_check and path[-11:] != ".cumuluswap"):
+ #		upload_file(os.path,join(event.path,event.name)) 
    	print(os.path.join(event.path,event.name)) 
-   ''' 
+    
 
 def notify(Watcher, Process, Path): 
 	'''Instantiates notify class with the OsWatcher Process''' 
