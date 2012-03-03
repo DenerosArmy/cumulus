@@ -66,8 +66,9 @@ def process_ram_file(ram_file_path):
         if rel_path[i] == "/": return rel_path[:i]
         i -= 1
 
-def split_file(file_path, encrypt):
+def split_file(file_path, encrypt=False):
     """Takes in a file path, encrypts it if required, and outputs a set of split file path."""
+    print("Split file is run")
     original_file = open(file_path, 'r')
     file_contents = original_file.readlines()
     original_file.close()
@@ -81,6 +82,7 @@ def split_file(file_path, encrypt):
         temp_file.write(add_metatags(file_path, i, line))
         temp_file.close()
         temp_paths.add(temp_file_path)
+    print(temp_paths)
     return temp_paths
 
 def join_file(rel_file_path, temp_file_paths):
@@ -93,8 +95,8 @@ def join_file(rel_file_path, temp_file_paths):
     temp_file = open(temp_file_path, 'w')
     for i in range(0, len(chunks)):
         temp_file.write(decrypt(chunks[i]))
-    #return get_absolute_path(rel_file_path), temp_file_path
-    rename(temp_file_path, get_abs_path(rel_file_path))
+    return get_absolute_path(rel_file_path), temp_file_path
+    #rename(temp_file_path, get_abs_path(rel_file_path))
 
 #index.set_read_file_cb(join_file)
 
