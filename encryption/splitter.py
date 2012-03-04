@@ -100,9 +100,7 @@ def join_file(rel_file_path, temp_file_paths):
     temp_file = open(temp_file_path, 'w')
     for i in range(0, len(chunks)):
         temp_file.write(decrypt(chunks[i]))
-    #print(get_absolute_path(rel_file_path), temp_file_path)
-    return get_absolute_path(rel_file_path), temp_file_path
-    #rename(temp_file_path, get_abs_path(rel_file_path))
+    return get_abs_path(rel_file_path), temp_file_path
 
 index.set_read_file_cb(join_file)
 
