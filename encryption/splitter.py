@@ -13,13 +13,13 @@ from os import rename, remove
 from os.path import abspath
 sys.path.insert(0, abspath(".."))
 from os.path import join
-#from indexer import index
+from indexer import index
 
 def inform(cumulus_dir):
     global cumulus_directory
     cumulus_directory = cumulus_dir
 
-cumulus_directory = "/home/jianwei/cumulus"
+cumulus_directory = "/home/nikita/dev/cumulus"
 
 def get_rel_path(abs_path, folder_name="cumulus", delimiter="/"):
     """Changes the given absolute path to a path relative to the given folder name."""
@@ -86,7 +86,8 @@ def split_file(file_path, encrypt=False):
         temp_file.close()
         temp_paths.add(temp_file_path)
     print(temp_paths)
-    return temp_paths
+    index.write_file(rel_file_path, temp_paths)
+    #return temp_paths
 
 def join_file(rel_file_path, temp_file_paths):
     """Joins the files given by temp_file_paths, and writes the new file to the path given by the relative path."""
@@ -99,11 +100,11 @@ def join_file(rel_file_path, temp_file_paths):
     temp_file = open(temp_file_path, 'w')
     for i in range(0, len(chunks)):
         temp_file.write(decrypt(chunks[i]))
-    print(get_absolute_path(rel_file_path), temp_file_path)
-    #return get_absolute_path(rel_file_path), temp_file_path
+    #print(get_absolute_path(rel_file_path), temp_file_path)
+    return get_absolute_path(rel_file_path), temp_file_path
     #rename(temp_file_path, get_abs_path(rel_file_path))
 
-#index.set_read_file_cb(join_file)
+index.set_read_file_cb(join_file)
 
 '''
 def upload_file(file_path, encrypt=False):

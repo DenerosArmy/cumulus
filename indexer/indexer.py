@@ -129,6 +129,8 @@ class Index(object):
         self.backends["db"].upload('/dev/shm/idx.json')
         print "Pushed JSON: {}".format(json.dumps(self.idx_json))
 
+        self.download_all()
+
     def pull_json(self):
         """Pull in new JSON data and update files on our end. Yields (filepath, swapfilepath) pairs.
         """
@@ -151,7 +153,7 @@ class Index(object):
                     for chunk in datum['chunks']:
                         print "Downloading chunk: {}".format(chunk)
                         self.backends["db"].download(os.path.join("/dev/shm", chunk), chunk)
-                    yield self.read_file_cb(datum['file'], datum['chunks'], [])
+                    yield self.read_file_cb(datum['file'], [os.path.join("/dev/shm", chunk) for chunk in datum['chunks']])
             self.json_counter += 1
 
         self.idx_json = new_json
