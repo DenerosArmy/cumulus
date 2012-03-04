@@ -133,6 +133,8 @@ class Index(object):
         self.backends["db"].uploadIndex('/dev/shm/idx.json')
         print "Pushed JSON: {}".format(json.dumps(self.idx_json))
 
+        print "Press enter to download everything"
+        raw_input()
         self.download_all()
 
     def pull_json(self):

@@ -1,7 +1,7 @@
 import os, sys 
 from pyinotify import *
 sys.path.insert(0, os.path.abspath("..")) 
-from encryption.splitter import split_file, inform  
+from encryption.splitter import split_file, inform, upload_file  
 import BlackList
 ''' Interface for watching file system, monitors specfic file/directory calls Spliiter upon any changes ''' 
 def Watcher(): 
@@ -14,11 +14,10 @@ class OsWatcher(ProcessEvent):
 
     def process_IN_CREATE(self,event): 
 	path = os.path.join(event.path,event.name) 
-#	if (path != dont_check and path[-11:] != ".cumuluswap"):
-#		upload_file(os.path.join(event.path,event.name))
 	print(path);
-	if(event.name[0] != "."):
-    		split_file(path) 
+	if (path[-11:] != ".cumuluswap"):
+		if(event.name[0] != "."):
+			upload_file(path)
     def process_IN_DELETE(self,event):
 	path = os.path.join(event.path,event.name) 
 #	if (path != dont_check and path[-11:] != ".cumuluswap"):

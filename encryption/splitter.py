@@ -7,19 +7,22 @@ Output: encrpyted file string portions
 Output String format: file_name+file_index+string_portion
 
 """
-import sys 
+import sys
 from encrypter import encrypt, decrypt
 from os import rename, remove
-from os.path import abspath
+from os.path import abspath, isfile
 sys.path.insert(0, abspath(".."))
 from os.path import join
 from indexer import index
 
-def inform(cumulus_dir):
-    global cumulus_directory
-    cumulus_directory = cumulus_dir
+class CumulusStore:
+    def __init__(self):
+        self.directory = ""
 
-cumulus_directory = "/home/nikita/dev/cumulus"
+cumulusStore = CumulusStore()
+
+def inform(cumulus_dir):
+    cumulusStore.directory = cumulus_dir
 
 def get_rel_path(abs_path, folder_name="cumulus", delimiter="/"):
     """Changes the given absolute path to a path relative to the given folder name."""
@@ -31,9 +34,9 @@ def get_rel_path(abs_path, folder_name="cumulus", delimiter="/"):
         component = components.pop()
     return delimiter+rel_path
 
-def get_abs_path(rel_path, folder_directory=cumulus_directory, delimiter="/"):
+def get_abs_path(rel_path, folder_directory=cumulusStore.directory, delimiter="/"):
     """Changes the given relative path to an absolute path."""
-    return cumulus_directory+rel_path
+    return cumulusStore.directory+rel_path
 
 def add_metatags(file_path, index, contents):
     """Adds metatags to the contents."""
@@ -72,6 +75,8 @@ def process_ram_file(ram_file_path):
 def split_file(file_path, encrypt=False):
     """Takes in a file path, encrypts it if required, and outputs a set of split file path."""
     print("Split file is run")
+    if not isfile(file_path):
+        return
     original_file = open(file_path, 'r')
     file_contents = original_file.readlines()
     original_file.close()
@@ -86,8 +91,7 @@ def split_file(file_path, encrypt=False):
         temp_file.close()
         temp_paths.add(temp_file_path)
     print(temp_paths)
-    index.write_file(rel_file_path, temp_paths)
-    #return temp_paths
+    return temp_paths
 
 def join_file(rel_file_path, temp_file_paths):
     """Joins the files given by temp_file_paths, and writes the new file to the path given by the relative path."""
@@ -96,7 +100,8 @@ def join_file(rel_file_path, temp_file_paths):
         index, file_chunk = retrieve_metatags(temp_file)
         chunks[index] = file_chunk
         remove(temp_file)
-    temp_file_path = cumulus_directory+process_ram_file(rel_file_path)+".cumuluswap"
+    temp_file_path = cumulusStore.directory+rel_file_path[:-1]+".cumuluswap"
+    #temp_file_path = cumulusStore.directory+process_ram_file(rel_file_path)+".cumuluswap"
     temp_file = open(temp_file_path, 'w')
     for i in range(0, len(chunks)):
         temp_file.write(decrypt(chunks[i]))
@@ -104,11 +109,11 @@ def join_file(rel_file_path, temp_file_paths):
 
 index.set_read_file_cb(join_file)
 
-'''
+
 def upload_file(file_path, encrypt=False):
     """Upload the given file path to the cloud."""
     temp_file_paths = split_file(file_path, encrypt)
-    return write_file(get_rel_path(file_path), temp_file_paths)
-'''
+    return index.write_file(get_rel_path(file_path), temp_file_paths)
+
 
 from os.path import abspath
