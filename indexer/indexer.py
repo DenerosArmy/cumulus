@@ -26,6 +26,7 @@ class Index(object):
         self.backends = { "db" : DropboxService() }
 
         self.json_counter = 0
+
         self.pull_json()
 
         self.mapping = {}
@@ -114,11 +115,6 @@ class Index(object):
         while True:
             for x in self.pull_json():
                 yield x
-#            if self.backends["db"].isChangedIndex():
-#                for x in self.pull_json():
-#                    yield x
-#            else:
-#                time.sleep(1)
 
     def download_all(self):
         """Download all files from server"""
@@ -132,9 +128,11 @@ class Index(object):
     def push_json(self):
         """Push JSON to the JSON target backend
         """
+        print "Pushing JSON: {}".format(json.dumps(self.idx_json))
         with open('/dev/shm/idx.json', 'w') as f:
             json.dump(self.idx_json, f)
-        self.backends["db"].uploadIndex('/dev/shm/idx.json')
+        print "Uploading JSON"
+        self.backends["db"].upload('/dev/shm/idx.json')
         print "Pushed JSON: {}".format(json.dumps(self.idx_json))
 
         print "Press enter to download everything"
@@ -144,7 +142,11 @@ class Index(object):
     def pull_json(self):
         """Pull in new JSON data and update files on our end. Yields (filepath, swapfilepath) pairs.
         """
-        self.backends["db"].downloadIndex('/dev/shm/idx.json')
+        try:
+            self.backends["db"].download('/dev/shm/idx.json', 'idx.json')
+        except:
+            return
+
         with open('/dev/shm/idx.json') as f:
             try:
                 new_json = json.load(f)
