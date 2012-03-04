@@ -3,6 +3,7 @@ import os.path
 import json
 sys.path.insert(0, os.path.abspath('..'))
 from apis.dbox_wrapper import DropboxService
+import time
 
 class Index(object):
     """An index of mappings between local files and files in the cloud
@@ -109,8 +110,11 @@ class Index(object):
     def sync(self):
         """Syncs the remote data with the database. Yields (proper_name, swap_name pairs) whenever a file is updated"""
         while True:
-            for x in self.pull_json():
-                yield x
+            if self.backends["db"].isChangedIndex():
+                for x in self.pull_json():
+                    yield x
+            else:
+                time.sleep(1)
 
     def download_all(self):
         """Download all files from server"""
@@ -126,7 +130,7 @@ class Index(object):
         """
         with open('/dev/shm/idx.json', 'w') as f:
             json.dump(self.idx_json, f)
-        self.backends["db"].upload('/dev/shm/idx.json')
+        self.backends["db"].uploadIndex('/dev/shm/idx.json')
         print "Pushed JSON: {}".format(json.dumps(self.idx_json))
 
         self.download_all()
@@ -134,7 +138,7 @@ class Index(object):
     def pull_json(self):
         """Pull in new JSON data and update files on our end. Yields (filepath, swapfilepath) pairs.
         """
-        self.backends["db"].download('/dev/shm/idx.json', 'idx.json')
+        self.backends["db"].downloadIndex('/dev/shm/idx.json')
         with open('/dev/shm/idx.json') as f:
             new_json = json.load(f)
         print "Pulled JSON: {}".format(new_json)
