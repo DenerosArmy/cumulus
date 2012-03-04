@@ -15,11 +15,14 @@ sys.path.insert(0, abspath(".."))
 from os.path import join
 #from indexer import index
 
-def inform(cumulus_dir):
-    global cumulus_directory
-    cumulus_directory = cumulus_dir
+class CumulusStore:
+    def __init__(self):
+        self.directory = ""
 
-cumulus_directory = "/home/jianwei/cumulus"
+cumulusStore = CumulusStore()
+
+def inform(cumulus_dir):
+    cumulusStore.directory = cumulus_dir
 
 def get_rel_path(abs_path, folder_name="cumulus", delimiter="/"):
     """Changes the given absolute path to a path relative to the given folder name."""
@@ -31,9 +34,9 @@ def get_rel_path(abs_path, folder_name="cumulus", delimiter="/"):
         component = components.pop()
     return delimiter+rel_path
 
-def get_abs_path(rel_path, folder_directory=cumulus_directory, delimiter="/"):
+def get_abs_path(rel_path, folder_directory=cumulusStore.directory, delimiter="/"):
     """Changes the given relative path to an absolute path."""
-    return cumulus_directory+rel_path
+    return cumulusStore.directory+rel_path
 
 def add_metatags(file_path, index, contents):
     """Adds metatags to the contents."""
@@ -72,7 +75,11 @@ def process_ram_file(ram_file_path):
 def split_file(file_path, encrypt=False):
     """Takes in a file path, encrypts it if required, and outputs a set of split file path."""
     print("Split file is run")
-    original_file = open(file_path, 'r')
+    try: 
+   	 original_file = open(file_path, 'r')
+    except IOError: 
+	print("File not found")  
+
     file_contents = original_file.readlines()
     original_file.close()
     temp_paths = set()
@@ -95,7 +102,8 @@ def join_file(rel_file_path, temp_file_paths):
         index, file_chunk = retrieve_metatags(temp_file)
         chunks[index] = file_chunk
         remove(temp_file)
-    temp_file_path = cumulus_directory+process_ram_file(rel_file_path)+".cumuluswap"
+    temp_file_path = cumulusStore.directory+rel_file_path+".cumuluswap"
+    #temp_file_path = cumulusStore.directory+process_ram_file(rel_file_path)+".cumuluswap"
     temp_file = open(temp_file_path, 'w')
     for i in range(0, len(chunks)):
         temp_file.write(decrypt(chunks[i]))
