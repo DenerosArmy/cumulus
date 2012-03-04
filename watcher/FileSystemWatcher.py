@@ -1,7 +1,7 @@
 import os, sys 
 from pyinotify import *
 sys.path.insert(0, os.path.abspath("..")) 
-from encryption.splitter import split_file, inform, upload_file  
+from encryption.splitter import split_file, inform, upload_file, index
 import BlackList
 ''' Interface for watching file system, monitors specfic file/directory calls Spliiter upon any changes ''' 
 def Watcher(): 

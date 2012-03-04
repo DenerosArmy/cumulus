@@ -101,7 +101,7 @@ def join_file(rel_file_path, temp_file_paths):
         chunks[index] = file_chunk
         remove(temp_file)
     temp_file_path = cumulusStore.directory+rel_file_path[:-1]+".cumuluswap"
-    #temp_file_path = cumulusStore.directory+process_ram_file(rel_file_path)+".cumuluswap"
+
     temp_file = open(temp_file_path, 'w')
     for i in range(0, len(chunks)):
         temp_file.write(decrypt(chunks[i]))

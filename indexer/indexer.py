@@ -23,11 +23,13 @@ class Index(object):
             return "@@fake-path", None
         self.read_delete_file_cb = cb
 
+        self.backends = { "db" : DropboxService() }
+
+        self.json_counter = 0
+        self.pull_json()
+
         self.mapping = {}
         self.idx_json = {}
-        self.json_counter = 0
-
-        self.backends = { "db" : DropboxService() }
 
     def set_read_file_cb(self, cb):
         """Set the callback when a file on the cloud is added or updated
@@ -110,11 +112,13 @@ class Index(object):
     def sync(self):
         """Syncs the remote data with the database. Yields (proper_name, swap_name pairs) whenever a file is updated"""
         while True:
-            if self.backends["db"].isChangedIndex():
-                for x in self.pull_json():
-                    yield x
-            else:
-                time.sleep(1)
+            for x in self.pull_json():
+                yield x
+#            if self.backends["db"].isChangedIndex():
+#                for x in self.pull_json():
+#                    yield x
+#            else:
+#                time.sleep(1)
 
     def download_all(self):
         """Download all files from server"""
@@ -135,14 +139,18 @@ class Index(object):
 
         print "Press enter to download everything"
         raw_input()
-        self.download_all()
+        self.json_counter = 0
 
     def pull_json(self):
         """Pull in new JSON data and update files on our end. Yields (filepath, swapfilepath) pairs.
         """
         self.backends["db"].downloadIndex('/dev/shm/idx.json')
         with open('/dev/shm/idx.json') as f:
-            new_json = json.load(f)
+            try:
+                new_json = json.load(f)
+            except:
+                print "JSON could not load: {}".format(f.read())
+                return
         print "Pulled JSON: {}".format(new_json)
 
         while unicode(self.json_counter) in new_json.keys():
@@ -161,5 +169,6 @@ class Index(object):
                         self.backends["db"].download(os.path.join("/dev/shm", chunk), chunk)
                     yield self.read_file_cb(datum['file'], [os.path.join("/dev/shm", chunk) for chunk in datum['chunks']])
             self.json_counter += 1
+        print "Current counter: {}".format(self.json_counter)
 
         self.idx_json = new_json

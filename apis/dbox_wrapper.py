@@ -36,11 +36,13 @@ class DropboxService(object):
         """Takes the local path of the index file"""
         f = open(index_path)
         self.lastIndexMetadata = self.client.put_file('index1234567890.json', f, True)
+        print("Index uploaded successfully")
 
     def downloadIndex(self, index_path):
         indexFile = open(index_path, 'w')
         f = self.client.get_file('index1234567890.json')
         indexFile.write(f.read())
+        print("Index downloaded successfully")
 
     def isChangedIndex(self):
         serverData = self.client.metadata('index1234567890.json')
